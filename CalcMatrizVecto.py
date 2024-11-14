@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
-import re
 
 class CalculadoraMatricesVectores:
     def __init__(self, root):
@@ -31,7 +30,6 @@ class CalculadoraMatricesVectores:
         self.operacion_text.grid(row=7, column=0, columnspan=2, padx=10, pady=(5, 10))
         tk.Button(self.root, text="Calcular", width=10, command=self.calcular_operacion_personalizada).grid(row=7, column=2, padx=10, pady=(5, 10))
 
-
         # Resultado
         tk.Label(self.root, text="Resultado:", fg="white", bg='#2E3B4E').grid(row=8, column=0, columnspan=3)
         self.resultado_label = tk.Text(self.root, width=50, height=5, state='disabled')
@@ -42,29 +40,32 @@ class CalculadoraMatricesVectores:
 
     def create_buttons(self):
         # Botones de Operaciones para Matrices o Vectores
+
+        # Botones para determinante
         self.boton_determinante_a = tk.Button(self.root, text="Determinante (A)", width=20, command=lambda: self.determinante('A'))
         self.boton_determinante_a.grid(row=2, column=0, padx=5, pady=5)
-
-        self.boton_inversa_a = tk.Button(self.root, text="Inversa (A)", width=20, command=lambda: self.inversa('A'))
-        self.boton_inversa_a.grid(row=3, column=0, padx=5, pady=5)
-
-        self.boton_transpuesta_a = tk.Button(self.root, text="Transpuesta (A)", width=20, command=lambda: self.transpuesta('A'))
-        self.boton_transpuesta_a.grid(row=4, column=0, padx=5, pady=5)
-
-        self.boton_subespacio_a = tk.Button(self.root, text="Verificar Subespacio (A)", width=20, command=lambda: self.verificar_subespacio('A'))
-        self.boton_subespacio_a.grid(row=5, column=0, padx=5, pady=5)
-
         self.boton_determinante_b = tk.Button(self.root, text="Determinante (B)", width=20, command=lambda: self.determinante('B'))
         self.boton_determinante_b.grid(row=2, column=2, padx=5, pady=5)
 
+        # Botones para inversa
+        self.boton_inversa_a = tk.Button(self.root, text="Inversa (A)", width=20, command=lambda: self.inversa('A'))
+        self.boton_inversa_a.grid(row=3, column=0, padx=5, pady=5)
         self.boton_inversa_b = tk.Button(self.root, text="Inversa (B)", width=20, command=lambda: self.inversa('B'))
         self.boton_inversa_b.grid(row=3, column=2, padx=5, pady=5)
 
+        # Botones para transpuesta
+        self.boton_transpuesta_a = tk.Button(self.root, text="Transpuesta (A)", width=20, command=lambda: self.transpuesta('A'))
+        self.boton_transpuesta_a.grid(row=4, column=0, padx=5, pady=5)
         self.boton_transpuesta_b = tk.Button(self.root, text="Transpuesta (B)", width=20, command=lambda: self.transpuesta('B'))
         self.boton_transpuesta_b.grid(row=4, column=2, padx=5, pady=5)
 
-        self.boton_subespacio_b = tk.Button(self.root, text="Verificar Subespacio (B)", width=20, command=lambda: self.verificar_subespacio('B'))
-        self.boton_subespacio_b.grid(row=5, column=2, padx=5, pady=5)
+        # Botones para producto punto y producto cruz (vectores)
+        self.boton_producto_punto = tk.Button(self.root, text="Producto Punto (A·B)", width=20, command=self.producto_punto)
+        self.boton_producto_cruz = tk.Button(self.root, text="Producto Cruz (A×B)", width=20, command=self.producto_cruz)
+
+        # Botones para magnitud (vectores)
+        self.boton_magnitud_a = tk.Button(self.root, text="Magnitud (A)", width=20, command=lambda: self.magnitud_vector('A'))
+        self.boton_magnitud_b = tk.Button(self.root, text="Magnitud (B)", width=20, command=lambda: self.magnitud_vector('B'))
 
     def cambiar_tipo(self):
         tipo = self.tipo.get()
@@ -74,29 +75,31 @@ class CalculadoraMatricesVectores:
             self.boton_determinante_a.grid(row=2, column=0, padx=5, pady=5)
             self.boton_inversa_a.grid(row=3, column=0, padx=5, pady=5)
             self.boton_transpuesta_a.grid(row=4, column=0, padx=5, pady=5)
-            self.boton_subespacio_a.grid(row=5, column=0, padx=5, pady=5)
             self.boton_determinante_b.grid(row=2, column=2, padx=5, pady=5)
             self.boton_inversa_b.grid(row=3, column=2, padx=5, pady=5)
             self.boton_transpuesta_b.grid(row=4, column=2, padx=5, pady=5)
-            self.boton_subespacio_b.grid(row=5, column=2, padx=5, pady=5)
-        else:
+            self.boton_producto_punto.grid_forget()
+            self.boton_producto_cruz.grid_forget()
+            self.boton_magnitud_a.grid_forget()
+            self.boton_magnitud_b.grid_forget()
+        elif tipo == "Vector":
             self.boton_determinante_a.grid_forget()
             self.boton_inversa_a.grid_forget()
             self.boton_transpuesta_a.grid_forget()
             self.boton_determinante_b.grid_forget()
             self.boton_inversa_b.grid_forget()
             self.boton_transpuesta_b.grid_forget()
-
+            self.boton_producto_punto.grid(row=3, column=1, padx=5, pady=5)
+            self.boton_producto_cruz.grid(row=4, column=1, padx=5, pady=5)
+            self.boton_magnitud_a.grid(row=2, column=0, padx=5, pady=5)
+            self.boton_magnitud_b.grid(row=2, column=2, padx=5, pady=5)
 
     def obtener_matriz(self, texto):
         try:
-            contenido = texto.get("1.0", tk.END).strip()
-            if not contenido:
-                return None  # No hacer nada si el texto está vacío
-            matriz = np.array(eval(contenido))
+            matriz = np.array(eval(texto.get("1.0", tk.END).strip()))
             return matriz
         except Exception as e:
-            messagebox.showerror("Error", f"Formato de matriz incorrecto: {e}. Usa [[1, 2], [3, 4]]")
+            messagebox.showerror("Error", f"Error al obtener la matriz/vector: {e}")
             return None
 
     def calcular_operacion_personalizada(self):
@@ -110,43 +113,58 @@ class CalculadoraMatricesVectores:
         # Entorno para operaciones personalizadas
         entorno = {
             "A": matriz_a,
-            "np": np  # Para usar funciones de numpy
+            "np": np 
         }
         
-        # Solo agrega B si ha sido ingresada
         if matriz_b is not None:
             entorno["B"] = matriz_b
 
         # Obtener la expresión de operación personalizada
-        operacion = self.operacion_text.get()
-
-        # Paso 1: Detectar multiplicación por un escalar, por ejemplo "2A" -> "2 * A"
-        operacion = re.sub(r'(\d+)(A|B)', r'\1*\2', operacion)  # Detecta 2A, 3B, etc. y los convierte en 2*A, 3*B
-
-        # Paso 2: Ajustar la operación para potencia de matrices con "^", como A^2 -> np.linalg.matrix_power(A, 2)
-        operacion = re.sub(r'([A|B])\^(\d+)', r'np.linalg.matrix_power(\1, \2)', operacion)
-
-        # Paso 3: Ajustar la operación para multiplicación de matrices, permitiendo multiplicación por escalar
-        # Cambiar solo cuando ambos lados del * son A o B
-        operacion = re.sub(r'(?<!\w)(A|B)\s*\*\s*(A|B)(?!\w)', r'np.matmul(\1, \2)', operacion)
-
-        # Paso 4: Reemplazar "^" con el operador de potencia cuando no se utiliza para matrices, solo como potencia de números
-        operacion = operacion.replace("^", "**")  # Cambiar ^ a ** para operaciones estándar de Python
-
+        operacion = self.operacion_text.get().strip()
         try:
-            # Evaluar la operación en el entorno definido
-            resultado = eval(operacion, {"__builtins__": None}, entorno)
-            self.mostrar_resultado(f"Resultado de '{self.operacion_text.get()}':\n{resultado}")
+            resultado = eval(operacion, entorno)
+            self.mostrar_resultado(resultado)
         except Exception as e:
-            messagebox.showerror("Error", f"Operación inválida: {e}")
+            messagebox.showerror("Error", f"Error al calcular la operación personalizada: {e}")
 
+    def producto_punto(self):
+        matriz_a = self.obtener_matriz(self.matriz_a_text)
+        matriz_b = self.obtener_matriz(self.matriz_b_text)
+        if matriz_a is not None and matriz_b is not None:
+            try:
+                resultado = np.dot(matriz_a, matriz_b)
+                self.mostrar_resultado(f"Producto Punto (A·B):\n{resultado}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al calcular el producto punto: {e}")
+
+    def producto_cruz(self):
+        matriz_a = self.obtener_matriz(self.matriz_a_text)
+        matriz_b = self.obtener_matriz(self.matriz_b_text)
+        if matriz_a is not None and matriz_b is not None:
+            try:
+                resultado = np.cross(matriz_a, matriz_b)
+                self.mostrar_resultado(f"Producto Cruz (A×B):\n{resultado}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al calcular el producto cruz: {e}")
+
+    def magnitud_vector(self, vector):
+        vector_actual = self.obtener_matriz(self.matriz_a_text if vector == 'A' else self.matriz_b_text)
+        if vector_actual is not None:
+            if vector_actual.ndim == 1:
+                resultado = np.linalg.norm(vector_actual)
+                self.mostrar_resultado(f"Magnitud de {vector}: {resultado:.2f}")
+            else:
+                messagebox.showerror("Error", "La entrada debe ser un vector para calcular la magnitud.")
 
     def determinante(self, matriz):
         matriz_actual = self.obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
         if matriz_actual is not None:
             if matriz_actual.shape[0] == matriz_actual.shape[1]:
-                resultado = np.linalg.det(matriz_actual)
-                self.mostrar_resultado(f"Determinante de {matriz}: {resultado}")
+                try:
+                    resultado = np.linalg.det(matriz_actual)
+                    self.mostrar_resultado(f"Determinante de {matriz}: {resultado:.2f}")
+                except np.linalg.LinAlgError:
+                    messagebox.showerror("Error", "La matriz no es invertible.")
             else:
                 messagebox.showerror("Error", "La matriz debe ser cuadrada para calcular el determinante.")
 
@@ -168,40 +186,19 @@ class CalculadoraMatricesVectores:
             resultado = matriz_actual.T
             self.mostrar_resultado(f"Transpuesta de {matriz}:\n{resultado}")
 
-    def verificar_subespacio(self, matriz):
-        matriz_actual = self.obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
-        if matriz_actual is not None:
-            # Verificar que la matriz contiene el vector cero
-            if not np.any(matriz_actual == 0):
-                messagebox.showerror("Error", f"La matriz {matriz} no contiene el vector cero.\n"
-                                             "Contraejemplo: Resta de la matriz consigo misma.\n"
-                                             f"{matriz_actual} - {matriz_actual} = {np.subtract(matriz_actual, matriz_actual)}")
-                return
-
-            # Verificar cerradura bajo adición
-            suma = np.add(matriz_actual, matriz_actual)
-            if not np.array_equal(suma, matriz_actual):
-                messagebox.showerror("Error", f"La matriz {matriz} no es cerrada bajo adición.\n"
-                                             f"Contraejemplo: Suma de la matriz consigo misma.\n"
-                                             f"{matriz_actual} + {matriz_actual} = {suma}")
-                return
-
-            # Verificar cerradura bajo multiplicación por escalar
-            escalar = 2
-            multiplicado = np.multiply(matriz_actual, escalar)
-            if not np.array_equal(multiplicado, matriz_actual):
-                messagebox.showerror("Error", f"La matriz {matriz} no es cerrada bajo multiplicación por escalar.\n"
-                                             f"Contraejemplo: Multiplicación por el escalar {escalar}.\n"
-                                             f"{matriz_actual} * {escalar} = {multiplicado}")
-                return
-
-            # Si todas las propiedades se cumplen
-            self.mostrar_resultado(f"La matriz {matriz} es un subespacio vectorial.")
-
     def mostrar_resultado(self, resultado):
+        if isinstance(resultado, (np.ndarray, list)):
+            resultado = np.round(resultado, decimals=2)
+            resultado_str = np.array2string(resultado, precision=2, separator=', ')
+        elif isinstance(resultado, (int, float)):
+            resultado = round(resultado, 2)
+            resultado_str = f"{resultado:.2f}"
+        else:
+            resultado_str = str(resultado)
+        
         self.resultado_label.config(state='normal')
         self.resultado_label.delete("1.0", tk.END)
-        self.resultado_label.insert(tk.END, str(resultado))
+        self.resultado_label.insert(tk.END, resultado_str)
         self.resultado_label.config(state='disabled')
 
 # Inicializar la aplicación
