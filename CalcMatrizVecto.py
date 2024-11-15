@@ -71,7 +71,7 @@ class CalculadoraMatricesVectores:
         tipo = self.tipo.get()
 
         # Mostrar u ocultar los botones de operaciones según el tipo seleccionado
-        if tipo == "Matriz":
+        if (tipo == "Matriz"):
             self.boton_determinante_a.grid(row=2, column=0, padx=5, pady=5)
             self.boton_inversa_a.grid(row=3, column=0, padx=5, pady=5)
             self.boton_transpuesta_a.grid(row=4, column=0, padx=5, pady=5)
@@ -82,7 +82,7 @@ class CalculadoraMatricesVectores:
             self.boton_producto_cruz.grid_forget()
             self.boton_magnitud_a.grid_forget()
             self.boton_magnitud_b.grid_forget()
-        elif tipo == "Vector":
+        elif (tipo == "Vector"):
             self.boton_determinante_a.grid_forget()
             self.boton_inversa_a.grid_forget()
             self.boton_transpuesta_a.grid_forget()
@@ -94,12 +94,31 @@ class CalculadoraMatricesVectores:
             self.boton_magnitud_a.grid(row=2, column=0, padx=5, pady=5)
             self.boton_magnitud_b.grid(row=2, column=2, padx=5, pady=5)
 
+    def convertir_matriz(self, entrada):
+        filas = entrada.split(';')
+        matriz = [list(map(int, fila.split())) for fila in filas]
+        return matriz
+
+    def convertir_vector(self, entrada):
+        vector = list(map(int, entrada.split()))
+        return vector
+
     def obtener_matriz(self, texto):
         try:
-            matriz = np.array(eval(texto.get("1.0", tk.END).strip()))
+            entrada = texto.get("1.0", tk.END).strip()
+            matriz = np.array(self.convertir_matriz(entrada))
             return matriz
         except Exception as e:
             messagebox.showerror("Error", f"Error al obtener la matriz/vector: {e}")
+            return None
+
+    def obtener_vector(self, texto):
+        try:
+            entrada = texto.get("1.0", tk.END).strip()
+            vector = np.array(self.convertir_vector(entrada))
+            return vector
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al obtener el vector: {e}")
             return None
 
     def calcular_operacion_personalizada(self):
@@ -128,27 +147,27 @@ class CalculadoraMatricesVectores:
             messagebox.showerror("Error", f"Error al calcular la operación personalizada: {e}")
 
     def producto_punto(self):
-        matriz_a = self.obtener_matriz(self.matriz_a_text)
-        matriz_b = self.obtener_matriz(self.matriz_b_text)
-        if matriz_a is not None and matriz_b is not None:
+        vector_a = self.obtener_vector(self.matriz_a_text)
+        vector_b = self.obtener_vector(self.matriz_b_text)
+        if vector_a is not None and vector_b is not None:
             try:
-                resultado = np.dot(matriz_a, matriz_b)
+                resultado = np.dot(vector_a, vector_b)
                 self.mostrar_resultado(f"Producto Punto (A·B):\n{resultado}")
             except Exception as e:
                 messagebox.showerror("Error", f"Error al calcular el producto punto: {e}")
 
     def producto_cruz(self):
-        matriz_a = self.obtener_matriz(self.matriz_a_text)
-        matriz_b = self.obtener_matriz(self.matriz_b_text)
-        if matriz_a is not None and matriz_b is not None:
+        vector_a = self.obtener_vector(self.matriz_a_text)
+        vector_b = self.obtener_vector(self.matriz_b_text)
+        if vector_a is not None and vector_b is not None:
             try:
-                resultado = np.cross(matriz_a, matriz_b)
+                resultado = np.cross(vector_a, vector_b)
                 self.mostrar_resultado(f"Producto Cruz (A×B):\n{resultado}")
             except Exception as e:
                 messagebox.showerror("Error", f"Error al calcular el producto cruz: {e}")
 
     def magnitud_vector(self, vector):
-        vector_actual = self.obtener_matriz(self.matriz_a_text if vector == 'A' else self.matriz_b_text)
+        vector_actual = self.obtener_vector(self.matriz_a_text if vector == 'A' else self.matriz_b_text)
         if vector_actual is not None:
             if vector_actual.ndim == 1:
                 resultado = np.linalg.norm(vector_actual)
