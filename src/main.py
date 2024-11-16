@@ -1,5 +1,5 @@
 import tkinter as tk
-from Calculadora import CalculadoraMatricesVectores
+from src.Calculadora import CalculadoraMatricesVectores
 
 def main():
     root = tk.Tk()

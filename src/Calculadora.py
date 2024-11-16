@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 import re
-from utils import convertir_matriz, convertir_vector, obtener_matriz, obtener_vector
+from src.utils import convertir_matriz, convertir_vector, obtener_matriz, obtener_vector
 
 class CalculadoraMatricesVectores:
     def __init__(self, root):
@@ -209,6 +209,3 @@ class CalculadoraMatricesVectores:
         self.resultado_label.config(state='disabled')
 
 # Inicializar la aplicación
-root = tk.Tk()
-app = CalculadoraMatricesVectores(root)
-root.mainloop()
