@@ -1,0 +1,29 @@
+# Ignorar archivos generados por PyInstaller
+/dist/
+/build/
+
+# Ignorar archivos de compilación de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar entorno virtual
+venv/
+env/
+
+# Ignorar configuraciones de IDE
+.idea/
+.vscode/
+
+# Ignorar archivos temporales de sistema
+Thumbs.db
+.DS_Store
+
+# Archivos de pruebas
+*.log
+*.bak
+
+# Ignorar el archivo de instalación en .exe
+*.exe
+
+*.iss
