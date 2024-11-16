@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
+import re
+from utils import convertir_matriz, convertir_vector, obtener_matriz, obtener_vector
 
 class CalculadoraMatricesVectores:
     def __init__(self, root):
@@ -25,7 +27,7 @@ class CalculadoraMatricesVectores:
         self.create_buttons()
 
         # Entrada para operaciones personalizadas
-        tk.Label(self.root, text="Operación personalizada (ej. 2*A + B):", fg="white", bg='#2E3B4E').grid(row=6, column=0, columnspan=3, pady=(10, 0))
+        tk.Label(self.root, text="Operación personalizada (ej. 2A + B):", fg="white", bg='#2E3B4E').grid(row=6, column=0, columnspan=3, pady=(10, 0))
         self.operacion_text = tk.Entry(self.root, width=30)
         self.operacion_text.grid(row=7, column=0, columnspan=2, padx=10, pady=(5, 10))
         tk.Button(self.root, text="Calcular", width=10, command=self.calcular_operacion_personalizada).grid(row=7, column=2, padx=10, pady=(5, 10))
@@ -94,37 +96,10 @@ class CalculadoraMatricesVectores:
             self.boton_magnitud_a.grid(row=2, column=0, padx=5, pady=5)
             self.boton_magnitud_b.grid(row=2, column=2, padx=5, pady=5)
 
-    def convertir_matriz(self, entrada):
-        filas = entrada.split(';')
-        matriz = [list(map(int, fila.split())) for fila in filas]
-        return matriz
-
-    def convertir_vector(self, entrada):
-        vector = list(map(int, entrada.split()))
-        return vector
-
-    def obtener_matriz(self, texto):
-        try:
-            entrada = texto.get("1.0", tk.END).strip()
-            matriz = np.array(self.convertir_matriz(entrada))
-            return matriz
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al obtener la matriz/vector: {e}")
-            return None
-
-    def obtener_vector(self, texto):
-        try:
-            entrada = texto.get("1.0", tk.END).strip()
-            vector = np.array(self.convertir_vector(entrada))
-            return vector
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al obtener el vector: {e}")
-            return None
-
     def calcular_operacion_personalizada(self):
         # Obtener las matrices A y B
-        matriz_a = self.obtener_matriz(self.matriz_a_text)
-        matriz_b = self.obtener_matriz(self.matriz_b_text)
+        matriz_a = obtener_matriz(self.matriz_a_text)
+        matriz_b = obtener_matriz(self.matriz_b_text)
 
         if matriz_a is None:
             return
@@ -139,16 +114,29 @@ class CalculadoraMatricesVectores:
             entorno["B"] = matriz_b
 
         # Obtener la expresión de operación personalizada
-        operacion = self.operacion_text.get().strip()
+        operacion = self.operacion_text.get().strip().upper()
         try:
+            # Detectar multiplicación por un escalar, por ejemplo "2A" -> "2 * A"
+            operacion = re.sub(r'(\d+)(A|B)', r'\1*\2', operacion)
+
+            # Ajustar la operación para potencia de matrices con "^", como A^2 -> np.linalg.matrix_power(A, 2)
+            operacion = re.sub(r'([A|B])\^(\d+)', r'np.linalg.matrix_power(\1, \2)', operacion)
+
+            # Ajustar la operación para multiplicación de matrices, permitiendo multiplicación por escalar
+            # Cambiar solo cuando ambos lados del * son A o B
+            operacion = re.sub(r'(?<!\w)(A|B)\s*\*\s*(A|B)(?!\w)', r'np.matmul(\1, \2)', operacion)
+
+            # Reemplazar "^" con el operador de potencia cuando no se utiliza para matrices, solo como potencia de números
+            operacion = operacion.replace("^", "**")  # Cambiar ^ a ** para operaciones estándar de Python
+
             resultado = eval(operacion, entorno)
             self.mostrar_resultado(resultado)
         except Exception as e:
             messagebox.showerror("Error", f"Error al calcular la operación personalizada: {e}")
 
     def producto_punto(self):
-        vector_a = self.obtener_vector(self.matriz_a_text)
-        vector_b = self.obtener_vector(self.matriz_b_text)
+        vector_a = obtener_vector(self.matriz_a_text)
+        vector_b = obtener_vector(self.matriz_b_text)
         if vector_a is not None and vector_b is not None:
             try:
                 resultado = np.dot(vector_a, vector_b)
@@ -157,8 +145,8 @@ class CalculadoraMatricesVectores:
                 messagebox.showerror("Error", f"Error al calcular el producto punto: {e}")
 
     def producto_cruz(self):
-        vector_a = self.obtener_vector(self.matriz_a_text)
-        vector_b = self.obtener_vector(self.matriz_b_text)
+        vector_a = obtener_vector(self.matriz_a_text)
+        vector_b = obtener_vector(self.matriz_b_text)
         if vector_a is not None and vector_b is not None:
             try:
                 resultado = np.cross(vector_a, vector_b)
@@ -167,7 +155,7 @@ class CalculadoraMatricesVectores:
                 messagebox.showerror("Error", f"Error al calcular el producto cruz: {e}")
 
     def magnitud_vector(self, vector):
-        vector_actual = self.obtener_vector(self.matriz_a_text if vector == 'A' else self.matriz_b_text)
+        vector_actual = obtener_vector(self.matriz_a_text if vector == 'A' else self.matriz_b_text)
         if vector_actual is not None:
             if vector_actual.ndim == 1:
                 resultado = np.linalg.norm(vector_actual)
@@ -176,7 +164,7 @@ class CalculadoraMatricesVectores:
                 messagebox.showerror("Error", "La entrada debe ser un vector para calcular la magnitud.")
 
     def determinante(self, matriz):
-        matriz_actual = self.obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
+        matriz_actual = obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
         if matriz_actual is not None:
             if matriz_actual.shape[0] == matriz_actual.shape[1]:
                 try:
@@ -188,7 +176,7 @@ class CalculadoraMatricesVectores:
                 messagebox.showerror("Error", "La matriz debe ser cuadrada para calcular el determinante.")
 
     def inversa(self, matriz):
-        matriz_actual = self.obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
+        matriz_actual = obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
         if matriz_actual is not None:
             if matriz_actual.shape[0] == matriz_actual.shape[1]:
                 try:
@@ -200,7 +188,7 @@ class CalculadoraMatricesVectores:
                 messagebox.showerror("Error", "La matriz debe ser cuadrada para calcular la inversa.")
 
     def transpuesta(self, matriz):
-        matriz_actual = self.obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
+        matriz_actual = obtener_matriz(self.matriz_a_text if matriz == 'A' else self.matriz_b_text)
         if matriz_actual is not None:
             resultado = matriz_actual.T
             self.mostrar_resultado(f"Transpuesta de {matriz}:\n{resultado}")
