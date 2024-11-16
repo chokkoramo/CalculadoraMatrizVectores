@@ -15,7 +15,7 @@ Este proyecto es una **calculadora de matrices y vectores** desarrollada en **Py
 - **Magnitud**
 
 ### ✨ Operaciones Personalizadas:
-- Realiza operaciones como `2 * A + B`.
+- Realiza operaciones como `2A + B`.
 
 ## 📦 Instalación
 Sigue los pasos a continuación para instalar y ejecutar el proyecto:
@@ -37,7 +37,7 @@ Sigue los pasos a continuación para instalar y ejecutar el proyecto:
 
 Ejecuta el archivo principal para iniciar la calculadora:
 ```bash
-  python CalcMatrizVecto.py
+  python src/Calculadora.py
 ```
 Selecciona el tipo de operación que deseas realizar (Matriz o Vector).
 Ingresa las matrices o vectores en los campos de texto proporcionados.
@@ -47,7 +47,7 @@ Ejemplo de Uso:
 Para calcular la magnitud de un vector, sigue estos pasos:
 
 1. Selecciona "Vector" como tipo de operación.
-2. Ingresa el vector en el campo de texto correspondiente (por ejemplo, [1, 2, 3]).
+2. Ingresa el vector en el campo de texto correspondiente (por ejemplo, 1 2 3).
 3. Haz clic en el botón "Magnitud (A)".
 4. El resultado se mostrará en el área de resultados.
 ### 🤝 Contribuciones
